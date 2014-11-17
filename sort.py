@@ -3,8 +3,9 @@ import cv2
 import math
 import colorsys
 import sys
+import copy
 
-def show(name):
+def show(name, img):
     cv2.namedWindow(name, cv2.WINDOW_NORMAL)
     cv2.imshow(name, img)
 
@@ -17,13 +18,14 @@ imgname = sys.argv[1]
 img = cv2.imread('in/' + imgname, -1)
 
 for y in range(img.shape[0]):
-    print('{0:.0%}'.format(float(y)/img.shape[0]) + ' complete')
     for x in range(img.shape[1]):
         if y != 0:
-            if tohsl(img[y, x])[1] - tohsl(img[y-1, x])[1] > level:
+            if abs(tohsl(img[y, x])[2] - tohsl(img[y-1, x])[2]) < level:
                 img[y, x] = img[y-1, x]
 
-show('firstpass')
+    print('{0:.0%}'.format(float(y)/img.shape[0]) + ' complete')
+
+show('main', img)
 print 'level : ' + str(level)
 print 'file : ' + imgname
 

@@ -42,23 +42,11 @@ def right(img):
         print('{0:.0%}'.format(float(x)/img.shape[1]) + ' complete')
     print 'done with right pass'
 
-def downright(img):
-    for y in range(img.shape[0]):
-        for x in range(img.shape[1]):
-            if y != 0:
-                if checkdown(img, y, x):
-                    img[y, x] = img[y-1, x]
-            if x != 0:
-                if checkright(img, y, x):
-                    img[y, x] = img[y, x-1]
-            print('{0:.0%}'.format(float(y + x)/(img.shape[0] + img.shape[1])) + ' complete')
-
-
 level = float(sys.argv[2])
 imgname = sys.argv[1]
 img = cv2.imread('in/' + imgname, -1)
 
-downright(img)
+right(img)
 
 show('main', img)
 print 'level : ' + str(level)

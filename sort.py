@@ -6,8 +6,7 @@ import sys
 import copy
 import os
 import glob
-
-frames = []
+from PIL import Image
 
 def show(name, img):
     cv2.namedWindow(name, cv2.WINDOW_NORMAL)
@@ -16,63 +15,62 @@ def show(name, img):
 def tohsl(data):
     return colorsys.rgb_to_hls(data[2], data[1], data[0])
 
-def checkdown(img, y, x):
+def checkdown(img, y, x, level):
     if abs(tohsl(img[y, x])[2] - tohsl(img[y-1, x])[2]) < level:
         return True
     return False
 
-def checkright(img, y, x):
+def checkright(img, y, x, level):
     if abs(tohsl(img[y, x])[2] - tohsl(img[y, x-1])[2]) < level:
         return True
     return False
 
-def down(img):
+def down(img, frames, level):
     for y in range(img.shape[0]):
         frames.append(copy.deepcopy(img))
         for x in range(img.shape[1]):
             if y != 0:
-                if checkdown(img, y, x):
+                if checkdown(img, y, x, level):
                     img[y, x] = img[y-1, x]
 
         print('{0:.0%}'.format(float(y)/img.shape[0]) + ' complete')
     print 'done with down pass'
 
-def right(img):
+def right(img, frames, level):
     for x in range(img.shape[1]):
         frames.append(copy.deepcopy(img))
         for y in range(img.shape[0]):
             if x != 0:
-                if checkright(img, y, x):
+                if checkright(img, y, x, level):
                     img[y, x] = img[y, x-1]
 
         print('{0:.0%}'.format(float(x)/img.shape[1]) + ' complete')
     print 'done with right pass'
 
-level = float(sys.argv[2])
-imgname = sys.argv[1]
-img = cv2.imread('in/' + imgname, -1)
-right(img)
-down(img)
-right(img)
-down(img)
+def sort(imgname, output):
+    frames = []
+    level = float(sys.argv[2])
+    img = cv2.imread(imgname, -1)
+    right(img, frames, level)
 
-files = glob.glob('out/*')
-for file in files:
-    os.remove(file)
+    files = glob.glob('out/*')
+    for file in files:
+        os.remove(file)
 
-for i in range(len(frames)):
-    cv2.imwrite('out/%d.jpg' % (i), frames[i])
-    print 'writing frame ' + str(i) + ' of ' + str(len(frames))
+    os.mkdir('out/' + output)
+    for i in range(len(frames)):
+        cv2.imwrite('out/%s/%d.jpg' % (output, i), frames[i])
+        print 'writing frame ' + str(i) + ' of ' + str(len(frames))
 
-vidlength = 10
-outrate = 30
-inrate = len(frames)/vidlength
-print 'create video'
-os.system('ffmpeg -framerate %d -i out/%%d.jpg -c:v libx264 -r %d -pix_fmt yuv420p out/out.mp4' % (inrate, outrate))
-print 'convert to webm'
-os.system('ffmpeg -i out/out.mp4 -vcodec libvpx -acodec libvorbis out/out.webm')
-print 'remove out/out.mp4'
-os.remove('out/out.mp4')
+    vidlength = 10
+    outrate = 30
+    inrate = len(frames)/vidlength
+    print 'create video'
+    os.system('ffmpeg -framerate %d -i out/%s/%%d.jpg -c:v libx264 -r %d -pix_fmt yuv420p out/%s.mp4' % (inrate, output, outrate, output))
+    print 'convert to webm'
+    os.system('ffmpeg -i out/%s.mp4 -vcodec libvpx -acodec libvorbis out/%s.webm' % (output, output))
+    print 'remove out/out.mp4'
+    os.remove('out/%s.mp4' % output)
+    return len(frames)
 
-print 'level : ' + str(level)
-print 'file : ' + imgname
+sort('in/bluehair.jpg', 'blue')

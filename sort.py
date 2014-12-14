@@ -64,5 +64,15 @@ for i in range(len(frames)):
     cv2.imwrite('out/%d.jpg' % (i), frames[i])
     print 'writing frame ' + str(i) + ' of ' + str(len(frames))
 
+vidlength = 10
+outrate = 30
+inrate = len(frames)/vidlength
+print 'create video'
+os.system('ffmpeg -framerate %d -i out/%%d.jpg -c:v libx264 -r %d -pix_fmt yuv420p out/out.mp4' % (inrate, outrate))
+print 'convert to webm'
+os.system('ffmpeg -i out/out.mp4 -vcodec libvpx -acodec libvorbis out/out.webm')
+print 'remove out/out.mp4'
+os.remove('out/out.mp4')
+
 print 'level : ' + str(level)
 print 'file : ' + imgname

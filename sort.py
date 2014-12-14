@@ -4,6 +4,10 @@ import math
 import colorsys
 import sys
 import copy
+import os
+import glob
+
+frames = []
 
 def show(name, img):
     cv2.namedWindow(name, cv2.WINDOW_NORMAL)
@@ -24,6 +28,7 @@ def checkright(img, y, x):
 
 def down(img):
     for y in range(img.shape[0]):
+        frames.append(copy.deepcopy(img))
         for x in range(img.shape[1]):
             if y != 0:
                 if checkdown(img, y, x):
@@ -34,6 +39,7 @@ def down(img):
 
 def right(img):
     for x in range(img.shape[1]):
+        frames.append(copy.deepcopy(img))
         for y in range(img.shape[0]):
             if x != 0:
                 if checkright(img, y, x):
@@ -45,16 +51,18 @@ def right(img):
 level = float(sys.argv[2])
 imgname = sys.argv[1]
 img = cv2.imread('in/' + imgname, -1)
-
 right(img)
+down(img)
+right(img)
+down(img)
 
-show('main', img)
+files = glob.glob('out/*')
+for file in files:
+    os.remove(file)
+
+for i in range(len(frames)):
+    cv2.imwrite('out/%d.jpg' % (i), frames[i])
+    print 'writing frame ' + str(i) + ' of ' + str(len(frames))
+
 print 'level : ' + str(level)
 print 'file : ' + imgname
-
-k = cv2.waitKey(0)
-if k == 27:
-    cv2.destroyAllWindows()
-elif k == ord('s'):
-    cv2.imwrite('out/' + imgname ,img)
-    cv2.destroyAllWindows()

@@ -6,7 +6,6 @@ import colorsys
 import sys
 import copy
 import os
-import shutil
 import praw
 from PIL import Image
 
@@ -77,12 +76,12 @@ def concatenate(paths, maxsize):
         i.thumbnail((sizes[-1][0], sizes[-1][1]))
 
     result = Image.new("RGBA", (sizes[0][0] + sizes[1][0], maxsize))
-
     x = 0
     for i in images:
         result.paste(i, (x, 0))
         x += i.size[0]
 
+    result.resize((500, 500))
     return result
 
 result = concatenate([sys.argv[2], sys.argv[3]], 500)

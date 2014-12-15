@@ -16,3 +16,5 @@ for num in $sequence; do
 
   ./compare `python2 -c "print $2 - .1"` out/$num.jpg in/$num.jpg `expr $num + 1` $direction
 done
+
+./compare .75 out/$1.jpg out/$1.jpg final mixup

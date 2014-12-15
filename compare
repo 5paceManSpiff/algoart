@@ -58,6 +58,9 @@ def sort(imgname, output, direction):
         right(img, frames, level)
     elif direction == 'down':
         down(img, frames, level)
+    elif direction == 'mixup':
+        right(img, frames, level)
+        down(img, frames, level)
 
     os.mkdir('out/' + output)
     for i in range(len(frames)):

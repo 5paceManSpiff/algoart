@@ -1,0 +1,10 @@
+body {
+  background-color: #000000;
+}
+
+video {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  text-align: center;
+}

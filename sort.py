@@ -6,6 +6,7 @@ import sys
 import copy
 import os
 import shutil
+import praw
 from PIL import Image
 
 def show(name, img):
@@ -49,32 +50,32 @@ def right(img, frames, level):
 
 def sort(imgname, output):
     frames = []
-    level = float(sys.argv[3])
+    level = float(sys.argv[1])
     img = cv2.imread(imgname, -1)
     right(img, frames, level)
-
-    shutil.rmtree('out')
-    os.mkdir('out')
 
     os.mkdir('out/' + output)
     for i in range(len(frames)):
         cv2.imwrite('out/%s/%d.jpg' % (output, i), frames[i])
         print 'writing frame ' + str(i) + ' of ' + str(len(frames))
 
-    vidlength = 5
-    outrate = 30
-    inrate = len(frames)/vidlength
-    os.system('ffmpeg -framerate %d -i out/%s/%%d.jpg -c:v libx264 -r %d -pix_fmt yuv420p out/%s.mp4' % (inrate, output, outrate, output))
-    os.system('ffmpeg -i out/%s.mp4 -vcodec libvpx -acodec libvorbis out/%s.webm' % (output, output))
-    os.remove('out/%s.mp4' % output)
     return len(frames)
 
-def concatenate(paths):
+def concatenate(paths, maxsize):
     images = map(Image.open, paths)
-    w = sum(i.size[0] for i in images)
-    mh = max(i.size[1] for i in images)
+    sizes = []
+    for i in images:
+        if i.size[0] > i.size[1]:
+            sizes.append([maxsize, (i.size[1] * maxsize)/i.size[0]])
+        elif i.size[0] < i.size[1]:
+            sizes.append([(i.size[0] * maxsize)/i.size[1], maxsize])
+        else:
+            sizes.append([maxsize, maxsize])
 
-    result = Image.new("RGBA", (w, mh))
+        print sizes
+        i.thumbnail((sizes[-1][0], sizes[-1][1]))
+
+    result = Image.new("RGBA", (sizes[0][0] + sizes[1][0], maxsize))
 
     x = 0
     for i in images:
@@ -83,6 +84,7 @@ def concatenate(paths):
 
     return result
 
-result = concatenate([sys.argv[1], sys.argv[2]])
-result.save('out/two.jpg')
-sort('out/two.jpg', 'two')
+result = concatenate([sys.argv[2], sys.argv[3]], 500)
+result.save('out/%s.jpg' % sys.argv[4])
+last = sort('out/%s.jpg' % sys.argv[4], sys.argv[4]) - 1
+os.system('ffmpeg -framerate %d -i out/%s/%%d.jpg -c:v libvpx -r %d -s 500x500 -pix_fmt yuv420p out/%s.webm' % (last/5, sys.argv[4], 30, sys.argv[4]))

@@ -48,11 +48,15 @@ def right(img, frames, level):
         print('{0:.0%}'.format(float(x)/img.shape[1]) + ' complete')
     print 'done with right pass'
 
-def sort(imgname, output):
+def sort(imgname, output, direction):
     frames = []
     level = float(sys.argv[1])
     img = cv2.imread(imgname, -1)
-    right(img, frames, level)
+
+    if direction == 'right':
+        right(img, frames, level)
+    elif direction == 'down':
+        down(img, frames, level)
 
     os.mkdir('out/' + output)
     for i in range(len(frames)):
@@ -86,5 +90,5 @@ def concatenate(paths, maxsize):
 
 result = concatenate([sys.argv[2], sys.argv[3]], 500)
 result.save('out/%s.jpg' % sys.argv[4])
-last = sort('out/%s.jpg' % sys.argv[4], sys.argv[4]) - 1
+last = sort('out/%s.jpg' % sys.argv[4], sys.argv[4], sys.argv[5]) - 1
 os.system('ffmpeg -framerate %d -i out/%s/%%d.jpg -c:v libvpx -r %d -s 500x500 -pix_fmt yuv420p out/%s.webm' % (last/5, sys.argv[4], 30, sys.argv[4]))

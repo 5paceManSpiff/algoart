@@ -8,10 +8,11 @@ cp in/0.jpg out/0.jpg
 count=`expr $1 - 1`
 sequence=`seq 0 $count`
 for num in $sequence; do
-  if [[ `expr $num % 2` == 0 ]]; then
+  if [[ `python2 -c "print $num % 2"` == 0 ]]; then
     direction="down"
   else
     direction="right"
   fi
-  ./compare $2 out/$num.jpg in/$num.jpg `expr $num + 1` $direction
+
+  ./compare `python2 -c "print $2 - .1"` out/$num.jpg in/$num.jpg `expr $num + 1` $direction
 done

@@ -7,6 +7,7 @@ import sys
 import copy
 import os
 import praw
+import shutil
 from PIL import Image
 
 def show(name, img):
@@ -50,7 +51,7 @@ def right(img, frames, level):
 
 def sort(imgname, output, direction):
     frames = []
-    level = float(sys.argv[1])
+    level = abs(float(sys.argv[1]))
     img = cv2.imread(imgname, -1)
 
     if direction == 'right':
@@ -91,4 +92,6 @@ def concatenate(paths, maxsize):
 result = concatenate([sys.argv[2], sys.argv[3]], 500)
 result.save('out/%s.jpg' % sys.argv[4])
 last = sort('out/%s.jpg' % sys.argv[4], sys.argv[4], sys.argv[5]) - 1
+os.remove('out/%s.jpg' % sys.argv[4])
+shutil.copyfile('out/%s/%d.jpg' % (sys.argv[4], last), 'out/%s.jpg' % sys.argv[4])
 os.system('ffmpeg -framerate %d -i out/%s/%%d.jpg -c:v libvpx -r %d -s 500x500 -pix_fmt yuv420p out/%s.webm' % (last/5, sys.argv[4], 30, sys.argv[4]))
